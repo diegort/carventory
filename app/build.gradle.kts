@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.carventory"
+    namespace = "es.dmontesinos.android.carventory"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.carventory"
+        applicationId = "es.dmontesinos.android.carventory"
         minSdk = 21
         targetSdk = 33
         versionCode = 1

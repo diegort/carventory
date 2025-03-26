@@ -1,4 +1,4 @@
-package com.example.carventory.ui
+package es.dmontesinos.android.carventory.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,10 +15,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.example.carventory.R
-import com.example.carventory.data.Car
-import com.example.carventory.databinding.FragmentCarDetailBinding
-import com.example.carventory.viewmodels.CarViewModel
+import es.dmontesinos.android.carventory.R
+import es.dmontesinos.android.carventory.data.Car
+import es.dmontesinos.android.carventory.databinding.FragmentCarDetailBinding
+import es.dmontesinos.android.carventory.viewmodels.CarViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class CarDetailFragment : Fragment() {

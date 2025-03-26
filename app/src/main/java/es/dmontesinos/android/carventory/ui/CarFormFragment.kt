@@ -1,4 +1,4 @@
-package com.example.carventory.ui
+package es.dmontesinos.android.carventory.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -19,10 +19,10 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.example.carventory.R
-import com.example.carventory.data.Car
-import com.example.carventory.databinding.FragmentCarFormBinding
-import com.example.carventory.viewmodels.CarViewModel
+import es.dmontesinos.android.carventory.R
+import es.dmontesinos.android.carventory.data.Car
+import es.dmontesinos.android.carventory.databinding.FragmentCarFormBinding
+import es.dmontesinos.android.carventory.viewmodels.CarViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -211,7 +211,7 @@ class CarFormFragment : Fragment() {
         photoFile?.also {
             val photoURI: Uri = FileProvider.getUriForFile(
                 requireContext(),
-                "com.example.carventory.fileprovider",
+                "es.dmontesinos.android.carventory.fileprovider",
                 it
             )
             imageUri = photoURI

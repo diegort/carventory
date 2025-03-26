@@ -1,5 +1,5 @@
 // CarDatabase.kt
-package com.example.carventory.data
+package es.dmontesinos.android.carventory.data
 
 import android.content.Context
 import androidx.room.Database

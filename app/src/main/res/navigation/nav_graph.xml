@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/carListFragment"
-        android:name="com.example.carventory.ui.CarListFragment"
+        android:name="es.dmontesinos.android.carventory.ui.CarListFragment"
         android:label="@string/car_list">
         <action
             android:id="@+id/action_carListFragment_to_carDetailFragment"
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/imageViewerFragment"
-        android:name="com.example.carventory.ui.ImageViewerFragment"
+        android:name="es.dmontesinos.android.carventory.ui.ImageViewerFragment"
         android:label="Image Viewer"
         tools:layout="@layout/fragment_image_viewer">
         <argument
@@ -29,7 +29,7 @@
 
     <fragment
         android:id="@+id/carDetailFragment"
-        android:name="com.example.carventory.ui.CarDetailFragment"
+        android:name="es.dmontesinos.android.carventory.ui.CarDetailFragment"
         android:label="@string/car_detail">
         <argument
             android:name="carId"
@@ -44,7 +44,7 @@
 
     <fragment
         android:id="@+id/carFormFragment"
-        android:name="com.example.carventory.ui.CarFormFragment"
+        android:name="es.dmontesinos.android.carventory.ui.CarFormFragment"
         android:label="@string/add_edit_car">
 
         <argument

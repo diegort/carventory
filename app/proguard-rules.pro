@@ -1,25 +1,25 @@
 # ProGuard rules for Carventory
 
 # Keep the Car data class
--keep class com.example.carventory.data.Car { *; }
+-keep class es.dmontesinos.android.carventory.data.Car { *; }
 
 # Keep the DAO interface
--keep interface com.example.carventory.data.CarDao { *; }
+-keep interface es.dmontesinos.android.carventory.data.CarDao { *; }
 
 # Keep the Room database class
--keep class com.example.carventory.data.CarDatabase { *; }
+-keep class es.dmontesinos.android.carventory.data.CarDatabase { *; }
 
 # Keep the repository class
--keep class com.example.carventory.data.CarRepository { *; }
+-keep class es.dmontesinos.android.carventory.data.CarRepository { *; }
 
 # Keep the ViewModels
--keep class com.example.carventory.viewmodels.** { *; }
+-keep class es.dmontesinos.android.carventory.viewmodels.** { *; }
 
 # Keep the activities
--keep class com.example.carventory.** { *; }
+-keep class es.dmontesinos.android.carventory.** { *; }
 
 # Keep the adapter
--keep class com.example.carventory.adapters.CarAdapter { *; }
+-keep class es.dmontesinos.android.carventory.adapters.CarAdapter { *; }
 
 # Keep all public methods in the classes
 -keepclassmembers public class * {

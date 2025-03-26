@@ -8,69 +8,11 @@ Carventory is an Android application designed to manage an inventory of toy cars
 - **Car Details**: Users can click on a car to view detailed information, including the car's name and image.
 - **Local Database**: Utilizes Room for local data storage, allowing users to add, update, and delete cars from their inventory.
 
-## Project Structure
-
-The project is organized as follows:
-
-```
-Carventory
-├── app
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── example
-│   │   │   │           └── carventory
-│   │   │   │               ├── MainActivity.kt
-│   │   │   │               ├── CarListActivity.kt
-│   │   │   │               ├── CarDetailActivity.kt
-│   │   │   │               ├── adapters
-│   │   │   │               │   └── CarAdapter.kt
-│   │   │   │               ├── data
-│   │   │   │               │   ├── Car.kt
-│   │   │   │               │   ├── CarDao.kt
-│   │   │   │               │   ├── CarDatabase.kt
-│   │   │   │               │   └── CarRepository.kt
-│   │   │   │               └── viewmodels
-│   │   │   │                   ├── CarListViewModel.kt
-│   │   │   │                   └── CarDetailViewModel.kt
-│   │   │   ├── res
-│   │   │   │   ├── layout
-│   │   │   │   │   ├── activity_main.xml
-│   │   │   │   │   ├── activity_car_list.xml
-│   │   │   │   │   ├── activity_car_detail.xml
-│   │   │   │   │   └── item_car.xml
-│   │   │   │   ├── values
-│   │   │   │   │   ├── colors.xml
-│   │   │   │   │   ├── strings.xml
-│   │   │   │   │   └── themes.xml
-│   │   │   │   └── menu
-│   │   │   │       └── car_menu.xml
-│   │   │   └── AndroidManifest.xml
-│   │   └── test
-│   │       └── java
-│   │           └── com
-│   │               └── example
-│   │                   └── carventory
-│   │                       └── ExampleUnitTest.kt
-│   ├── build.gradle.kts
-│   └── proguard-rules.pro
-├── build.gradle.kts
-├── gradle
-│   └── wrapper
-│       ├── gradle-wrapper.properties
-│       └── gradle-wrapper.jar
-├── gradlew
-├── gradlew.bat
-├── settings.gradle.kts
-└── README.md
-```
-
 ## Getting Started
 
 1. **Clone the repository**: 
    ```
-   git clone https://github.com/yourusername/carventory.git
+   git clone https://github.com/diegort/carventory.git
    ```
 
 2. **Open the project** in Android Studio.
