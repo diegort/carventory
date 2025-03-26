@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.carventory">
+    package="es.dmontesinos.android.carventory">
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -25,7 +25,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.carventory.fileprovider"
+            android:authorities="es.dmontesinos.android.carventory.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

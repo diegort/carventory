@@ -1,4 +1,4 @@
-package com.example.carventory.ui
+package es.dmontesinos.android.carventory.ui
 
 import android.net.Uri
 import android.os.Bundle
@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.example.carventory.databinding.FragmentImageViewerBinding
+import es.dmontesinos.android.carventory.databinding.FragmentImageViewerBinding
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import com.davemorrissey.labs.subscaleview.ImageSource

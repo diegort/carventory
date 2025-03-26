@@ -1,4 +1,4 @@
-package com.example.carventory.ui
+package es.dmontesinos.android.carventory.ui
 
 import android.graphics.Rect
 import android.view.View

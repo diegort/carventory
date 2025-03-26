@@ -1,5 +1,5 @@
 // Car.kt
-package com.example.carventory.data
+package es.dmontesinos.android.carventory.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

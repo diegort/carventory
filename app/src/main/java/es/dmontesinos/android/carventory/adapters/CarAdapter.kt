@@ -1,5 +1,4 @@
-// CarAdapter.kt
-package com.example.carventory.adapter
+package es.dmontesinos.android.carventory.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.carventory.R
-import com.example.carventory.data.Car
+import es.dmontesinos.android.carventory.R
+import es.dmontesinos.android.carventory.data.Car
 
 class CarAdapter(private val onItemClick: (Car) -> Unit) :
     ListAdapter<Car, CarAdapter.CarViewHolder>(CarDiffCallback()) {
