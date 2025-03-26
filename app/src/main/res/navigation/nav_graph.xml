@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/carListFragment">
+
+    <fragment
+        android:id="@+id/carListFragment"
+        android:name="com.example.carventory.ui.CarListFragment"
+        android:label="@string/car_list">
+        <action
+            android:id="@+id/action_carListFragment_to_carDetailFragment"
+            app:destination="@id/carDetailFragment" />
+        <action
+            android:id="@+id/action_carListFragment_to_carFormFragment"
+            app:destination="@id/carFormFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/imageViewerFragment"
+        android:name="com.example.carventory.ui.ImageViewerFragment"
+        android:label="Image Viewer"
+        tools:layout="@layout/fragment_image_viewer">
+        <argument
+            android:name="imageUri"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/carDetailFragment"
+        android:name="com.example.carventory.ui.CarDetailFragment"
+        android:label="@string/car_detail">
+        <argument
+            android:name="carId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_carDetailFragment_to_carFormFragment"
+            app:destination="@id/carFormFragment" />
+        <action
+            android:id="@+id/action_carDetailFragment_to_imageViewerFragment"
+            app:destination="@id/imageViewerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/carFormFragment"
+        android:name="com.example.carventory.ui.CarFormFragment"
+        android:label="@string/add_edit_car">
+
+        <argument
+            android:name="carId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+</navigation>

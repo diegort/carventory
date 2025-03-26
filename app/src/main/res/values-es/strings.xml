@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Carventory</string>
+
+    <!-- Navigation -->
+    <string name="car_list">Lista de Coches</string>
+    <string name="car_detail">Detalle del Coche</string>
+    <string name="add_edit_car">Añadir/Editar Coche</string>
+
+    <!-- Car List -->
+    <string name="search">Buscar</string>
+    <string name="cars_count">%1$d coches</string>
+    <string name="add_car">Añadir coche</string>
+
+    <!-- Car Details -->
+    <string name="edit">Editar</string>
+    <string name="delete">Eliminar</string>
+    <string name="delete_confirmation">¿Estás seguro de que quieres eliminar este coche?</string>
+    <string name="yes">Sí</string>
+    <string name="cancel">Cancelar</string>
+    <string name="car_image">Imagen del coche</string>
+    <string name="edit_car">Editar Coche</string>
+    <string name="error_creating_image_file">Error al crear archivo de imagen</string>
+    <string name="camera_permission_denied">Permiso de cámara denegado</string>
+
+    <!-- Car Form -->
+    <string name="car_name">Nombre del Coche</string>
+    <string name="name_required">El nombre es obligatorio</string>
+    <string name="take_picture">Tomar Foto</string>
+    <string name="car_updated">Coche actualizado</string>
+    <string name="new_car_added">Nuevo coche añadido</string>
+    <string name="save">Guardar</string>
+    <string name="please_take_picture">Por favor toma una foto</string>
+    <string name="error_loading_image">Error al cargar la imagen: %1$s</string>
+    <string name="add_new_car">Añadir Nuevo Coche</string>
+    <string name="car_image_preview">Vista previa de la imagen del coche</string>
+    <string name="take_image">Hacer Foto</string>
+
+    <!-- Image Viewer -->
+    <string name="close">Cerrar</string>
+</resources>
