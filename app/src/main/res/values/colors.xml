@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Light theme colors -->
-    <color name="primary">#1976D2</color>
-    <color name="primary_dark">#0D47A1</color>
-    <color name="secondary">#FFA000</color>
-    <color name="secondary_dark">#FF6F00</color>
-    <color name="background_light">#FFFFFF</color>
-    <color name="surface_light">#E0E0E0</color>
-    <color name="on_surface_light">#000000</color>
+    <color name="primary">#00BFFF</color> <!-- Azul brillante -->
+    <color name="primary_dark">#008ACD</color> <!-- Azul más oscuro -->
+    <color name="secondary">#FF4040</color> <!-- Rojo vibrante -->
+    <color name="secondary_dark">#D32F2F</color> <!-- Rojo más oscuro -->
+    <color name="background_light">#FFFFFF</color> <!-- Blanco -->
+    <color name="surface_light">#F5F5F5</color> <!-- Gris claro -->
+    <color name="on_surface_light">#202020</color> <!-- Negro grisáceo -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
-    <color name="primary_dark_theme">#90CAF9</color>
-    <color name="primary_variant_dark_theme">#64B5F6</color>
-    <color name="on_primary_dark_theme">#000000</color>
-    <color name="secondary_dark_theme">#FFD54F</color>
-    <color name="secondary_variant_dark_theme">#FFECB3</color>
-    <color name="on_secondary_dark_theme">#000000</color>
-    <color name="background_dark">#121212</color>
-    <color name="surface_dark">#1E1E1E</color>
-    <color name="on_surface_dark">#FFFFFF</color>
+    <!-- Dark theme colors -->
+    <color name="primary_dark_theme">#00A3CC</color> <!-- Azul más apagado -->
+    <color name="primary_variant_dark_theme">#007BA7</color> <!-- Azul aún más oscuro -->
+    <color name="on_primary_dark_theme">#E0E0E0</color> <!-- Blanco grisáceo -->
+    <color name="secondary_dark_theme">#FFC107</color> <!-- Amarillo cálido -->
+    <color name="secondary_variant_dark_theme">#FFECB3</color> <!-- Amarillo más suave -->
+    <color name="on_secondary_dark_theme">#000000</color> <!-- Negro para contraste -->
+    <color name="background_dark">#121212</color> <!-- Negro profundo -->
+    <color name="surface_dark">#1E1E1E</color> <!-- Gris oscuro -->
+    <color name="on_surface_dark">#E0E0E0</color> <!-- Blanco grisáceo -->
 </resources>
