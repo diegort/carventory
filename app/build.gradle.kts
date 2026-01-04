@@ -12,16 +12,30 @@ android {
 
     defaultConfig {
         applicationId = "es.dmontesinos.android.carventory"
-        minSdk = 21
-        targetSdk = 33
+        minSdk = 30
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore/carventory.jks") // Path to your keystore
+            storePassword = "your_store_password"
+            keyAlias = "your_key_alias"
+            keyPassword = "your_key_password"
+        }
+    }
+
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -46,6 +60,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.compose.ui:ui:1.7.8")
+    implementation("androidx.exifinterface:exifinterface:1.4.0")
     // Add these Compose dependencies
     implementation("androidx.compose.ui:ui:1.5.4")
     implementation("androidx.compose.foundation:foundation:1.5.4")

@@ -11,6 +11,8 @@
     <string name="search">Buscar</string>
     <string name="cars_count">%1$d coches</string>
     <string name="add_car">Añadir coche</string>
+    <string name="show_as_list">Mostrar como lista</string>
+    <string name="show_as_grid">Mostrar como cuadrícula</string>
 
     <!-- Car Details -->
     <string name="edit">Editar</string>
@@ -21,6 +23,7 @@
     <string name="car_image">Imagen del coche</string>
     <string name="edit_car">Editar Coche</string>
     <string name="error_creating_image_file">Error al crear archivo de imagen</string>
+    <string name="error_compressing_image">Error al comprimir la imagen</string>
     <string name="camera_permission_denied">Permiso de cámara denegado</string>
 
     <!-- Car Form -->

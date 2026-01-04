@@ -11,6 +11,8 @@
     <string name="search">Search</string>
     <string name="cars_count">%1$d cars</string>
     <string name="add_car">Add car</string>
+    <string name="show_as_grid">Show as grid</string>
+    <string name="show_as_list">Show as list</string>
 
     <!-- Car Details -->
     <string name="edit">Edit</string>
@@ -21,6 +23,7 @@
     <string name="car_image">Car image</string>
     <string name="edit_car">Edit Car</string>
     <string name="error_creating_image_file">Error creating image file</string>
+    <string name="error_compressing_image">Error compressing image</string>
     <string name="camera_permission_denied">Camera permission denied</string>
 
     <!-- Car Form -->

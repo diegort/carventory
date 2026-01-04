@@ -9,15 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import es.dmontesinos.android.carventory.R
-import es.dmontesinos.android.carventory.adapter.CarAdapter
+import es.dmontesinos.android.carventory.adapters.CarAdapter
 import es.dmontesinos.android.carventory.data.Car
 import es.dmontesinos.android.carventory.databinding.FragmentCarListBinding
 import es.dmontesinos.android.carventory.viewmodels.CarViewModel
@@ -32,6 +33,7 @@ class CarListFragment : Fragment() {
 
     private var searchQuery: String = ""
     private var originalList: List<Car> = emptyList()
+    private var isGridView = true // Track current view mode
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,23 +54,42 @@ class CarListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = CarAdapter { car ->
+        adapter = CarAdapter(isGridView) { car ->
             val action = CarListFragmentDirections.actionCarListFragmentToCarDetailFragment(car.id)
             findNavController().navigate(action)
         }
 
-        // Calculate span count based on screen width
-        val displayMetrics = resources.displayMetrics
-        val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
-        val spanCount = (screenWidthDp / 180).toInt().coerceAtLeast(2) // 180dp minimum width per tile
-
-        binding.carsRecyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.carsRecyclerView.adapter = adapter
+        updateLayoutManager()
 
-        // Add item decoration for consistent spacing
-        binding.carsRecyclerView.addItemDecoration(
-            GridSpacingItemDecoration(spanCount, resources.getDimensionPixelSize(R.dimen.grid_spacing), true)
-        )
+        // Update item decoration based on view mode
+        binding.carsRecyclerView.clearItemDecorations()
+        if (isGridView) {
+            // Calculate span count based on screen width
+            val displayMetrics = resources.displayMetrics
+            val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
+            val spanCount = (screenWidthDp / 180).toInt().coerceAtLeast(2) // 180dp minimum width per tile
+
+            binding.carsRecyclerView.addItemDecoration(
+                GridSpacingItemDecoration(spanCount, resources.getDimensionPixelSize(R.dimen.grid_spacing), true)
+            )
+        } else {
+            binding.carsRecyclerView.addItemDecoration(
+                ListSpacingItemDecoration(resources.getDimensionPixelSize(R.dimen.item_spacing))
+            )
+        }
+    }
+
+    private fun updateLayoutManager() {
+        if (isGridView) {
+            // Calculate span count based on screen width
+            val displayMetrics = resources.displayMetrics
+            val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
+            val spanCount = (screenWidthDp / 180).toInt().coerceAtLeast(2) // 180dp minimum width per tile
+            binding.carsRecyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
+        } else {
+            binding.carsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        }
     }
 
     private fun setupObservers() {
@@ -122,6 +143,10 @@ class CarListFragment : Fragment() {
                 val searchItem = menu.findItem(R.id.action_search)
                 val searchView = searchItem?.actionView as? SearchView
 
+                // Configure view mode toggle button
+                val viewModeItem = menu.findItem(R.id.action_toggle_view)
+                updateViewModeIcon(viewModeItem)
+
                 searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
                         return false
@@ -142,9 +167,33 @@ class CarListFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return false
+                return when (menuItem.itemId) {
+                    R.id.action_toggle_view -> {
+                        isGridView = !isGridView
+                        updateViewModeIcon(menuItem)
+
+                        // Create new adapter with new view mode
+                        val currentList = adapter.currentList
+                        setupRecyclerView()
+                        adapter.submitList(currentList)
+
+                        true
+                    }
+                    else -> false
+                }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun updateViewModeIcon(menuItem: MenuItem) {
+        menuItem.setIcon(
+            if (isGridView) R.drawable.ic_list_view
+            else R.drawable.ic_grid_view
+        )
+        menuItem.title = getString(
+            if (isGridView) R.string.show_as_list
+            else R.string.show_as_grid
+        )
     }
 
     override fun onResume() {
@@ -158,5 +207,11 @@ class CarListFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-}
 
+    // Extension function to clear all ItemDecorations
+    private fun RecyclerView.clearItemDecorations() {
+        while (itemDecorationCount > 0) {
+            removeItemDecorationAt(0)
+        }
+    }
+}

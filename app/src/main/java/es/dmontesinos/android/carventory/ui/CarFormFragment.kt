@@ -2,6 +2,9 @@ package es.dmontesinos.android.carventory.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -14,8 +17,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
@@ -23,6 +28,10 @@ import es.dmontesinos.android.carventory.R
 import es.dmontesinos.android.carventory.data.Car
 import es.dmontesinos.android.carventory.databinding.FragmentCarFormBinding
 import es.dmontesinos.android.carventory.viewmodels.CarViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -55,18 +64,6 @@ class CarFormFragment : Fragment() {
     // Camera launcher
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
-            // Delete old image if one exists and this is an edit operation
-            if (currentCar != null && currentCar?.imageUri != null && currentCar?.imageUri?.isNotEmpty() == true) {
-                val oldImagePath = Uri.parse(currentCar?.imageUri).path
-                oldImagePath?.let {
-                    val oldFile = File(it)
-                    if (oldFile.exists()) {
-                        oldFile.delete()
-                    }
-                }
-            }
-
-            // Set the new image
             imageUri?.let { uri ->
                 selectedImageUri = uri
                 Glide.with(requireContext())
@@ -153,28 +150,69 @@ class CarFormFragment : Fragment() {
             return
         }
 
-        val imageUriString = when {
-            selectedImageUri != null -> selectedImageUri.toString()
-            currentCar != null -> currentCar?.imageUri ?: ""
-            else -> {
-                Toast.makeText(requireContext(), getString(R.string.please_take_picture), Toast.LENGTH_SHORT).show()
-                return
+        binding.saveButton.isEnabled = false
+
+        lifecycleScope.launch {
+            val imageUriString: String? = when {
+                selectedImageUri != null -> {
+                    val success = compressImage(selectedImageUri!!)
+                    if (success) {
+                        selectedImageUri.toString()
+                    } else {
+                        // Compression failed, show error and re-enable button
+                        withContext(Dispatchers.Main) {
+                            binding.saveButton.isEnabled = true
+                        }
+                        null
+                    }
+                }
+                currentCar != null -> currentCar?.imageUri ?: ""
+                else -> ""
+            }
+
+            if (imageUriString == null) {
+                return@launch
+            }
+
+            if (imageUriString.isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), getString(R.string.please_take_picture), Toast.LENGTH_SHORT).show()
+                    binding.saveButton.isEnabled = true
+                }
+                return@launch
+            }
+
+            // Delete old image if we are editing and a new image was taken
+            if (currentCar != null && selectedImageUri != null && currentCar?.imageUri?.isNotEmpty() == true) {
+                val oldImagePath = Uri.parse(currentCar?.imageUri).path
+                oldImagePath?.let {
+                    withContext(Dispatchers.IO) {
+                        val oldFile = File(it)
+                        if (oldFile.exists()) {
+                            oldFile.delete()
+                        }
+                    }
+                }
+            }
+
+
+            val message: String
+            if (currentCar != null) {
+                // Update existing car
+                val updatedCar = currentCar!!.copy(name = name, imageUri = imageUriString)
+                viewModel.update(updatedCar)
+                message = getString(R.string.car_updated)
+            } else {
+                // Add new car
+                viewModel.insert(Car(name = name, imageUri = imageUriString))
+                message = getString(R.string.new_car_added)
+            }
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
             }
         }
-
-        val message: String
-        if (currentCar != null) {
-            // Update existing car
-            val updatedCar = currentCar!!.copy(name = name, imageUri = imageUriString)
-            viewModel.update(updatedCar)
-            message = getString(R.string.car_updated)
-        } else {
-            // Add new car
-            viewModel.insert(Car(name = name, imageUri = imageUriString))
-            message = getString(R.string.new_car_added)
-        }
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-        findNavController().navigateUp()
     }
 
     private fun checkCameraPermissionAndLaunch() {
@@ -229,6 +267,82 @@ class CarFormFragment : Fragment() {
             ".jpg", /* suffix */
             storageDir /* directory */
         )
+    }
+
+    private suspend fun compressImage(uri: Uri): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val targetSizeBytes = 200 * 1024 // 200KB
+                var imageStream = requireContext().contentResolver.openInputStream(uri)
+
+                // Get EXIF orientation
+                val exifInterface = imageStream?.let { ExifInterface(it) }
+                val orientation = exifInterface?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+                imageStream?.close()
+
+                // Decode bitmap
+                imageStream = requireContext().contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(imageStream)
+                imageStream?.close()
+
+                if (bitmap == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), getString(R.string.error_compressing_image), Toast.LENGTH_LONG).show()
+                    }
+                    return@withContext false
+                }
+
+                // Rotate the bitmap
+                val rotatedBitmap = when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270f)
+                    else -> bitmap
+                }
+
+                // Resize the bitmap
+                val maxHeight = 960.0f
+                val maxWidth = 1280.0f
+                val ratio: Float = Math.min(maxWidth / rotatedBitmap.width, maxHeight / rotatedBitmap.height)
+                val newWidth = Math.round(ratio * rotatedBitmap.width)
+                val newHeight = Math.round(ratio * rotatedBitmap.height)
+
+                val scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, newWidth, newHeight, true)
+
+                val outputStream = requireContext().contentResolver.openOutputStream(uri, "w")
+                if (outputStream == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), getString(R.string.error_compressing_image), Toast.LENGTH_LONG).show()
+                    }
+                    return@withContext false
+                }
+
+                val baos = ByteArrayOutputStream()
+                var quality = 90
+                do {
+                    baos.reset()
+                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos)
+                    quality -= 5
+                } while (baos.size() > targetSizeBytes && quality > 40)
+
+                outputStream.write(baos.toByteArray())
+                outputStream.close()
+                baos.close()
+
+                true
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), getString(R.string.error_compressing_image), Toast.LENGTH_LONG).show()
+                }
+                false
+            }
+        }
+    }
+
+    private fun rotateImage(source: Bitmap, angle: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(angle)
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
     }
 
     override fun onDestroyView() {

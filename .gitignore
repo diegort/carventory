@@ -32,4 +32,7 @@ google-services.json
 # Android Profiling
 *.hprof
 
+# Generated APK and APP Bundle files
+app/*
+
 **/.DS_Store
