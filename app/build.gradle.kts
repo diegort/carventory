@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     //id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
-    id("com.google.devtools.ksp") version "1.9.0-1.0.13"
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
 android {
@@ -51,6 +51,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
