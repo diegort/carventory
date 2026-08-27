@@ -9,6 +9,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -17,9 +20,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.core.view.MenuProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -49,6 +54,7 @@ class CarFormFragment : Fragment() {
     private var currentCar: Car? = null
     private var selectedImageUri: Uri? = null
     private var imageUri: Uri? = null
+    private var saveMenuItem: MenuItem? = null
 
     // Permission request launcher
     private val requestPermissionLauncher = registerForActivityResult(
@@ -108,6 +114,7 @@ class CarFormFragment : Fragment() {
 
         setupFormMode()
         setupButtons()
+        setupMenu()
     }
 
     private fun setupFormMode() {
@@ -136,10 +143,25 @@ class CarFormFragment : Fragment() {
         binding.addImageButton.setOnClickListener {
             checkCameraPermissionAndLaunch()
         }
+    }
 
-        binding.saveButton.setOnClickListener {
-            saveCar()
-        }
+    private fun setupMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.car_form_menu, menu)
+                saveMenuItem = menu.findItem(R.id.action_save)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_save -> {
+                        saveCar()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun saveCar() {
@@ -150,7 +172,7 @@ class CarFormFragment : Fragment() {
             return
         }
 
-        binding.saveButton.isEnabled = false
+        saveMenuItem?.isEnabled = false
 
         lifecycleScope.launch {
             val imageUriString: String? = when {
@@ -161,7 +183,7 @@ class CarFormFragment : Fragment() {
                     } else {
                         // Compression failed, show error and re-enable button
                         withContext(Dispatchers.Main) {
-                            binding.saveButton.isEnabled = true
+                            saveMenuItem?.isEnabled = true
                         }
                         null
                     }
@@ -177,7 +199,7 @@ class CarFormFragment : Fragment() {
             if (imageUriString.isEmpty()) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), getString(R.string.please_take_picture), Toast.LENGTH_SHORT).show()
-                    binding.saveButton.isEnabled = true
+                    saveMenuItem?.isEnabled = true
                 }
                 return@launch
             }
