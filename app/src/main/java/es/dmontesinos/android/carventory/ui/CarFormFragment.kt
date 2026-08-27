@@ -280,9 +280,21 @@ class CarFormFragment : Fragment() {
                 val orientation = exifInterface?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
                 imageStream?.close()
 
-                // Decode bitmap
+                // Decode bounds first so we can downsample directly instead of
+                // decoding the full-resolution image and scaling afterwards
+                val maxHeight = 960
+                val maxWidth = 1280
+
+                val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 imageStream = requireContext().contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(imageStream)
+                BitmapFactory.decodeStream(imageStream, null, boundsOptions)
+                imageStream?.close()
+
+                boundsOptions.inSampleSize = calculateInSampleSize(boundsOptions, maxWidth, maxHeight)
+                boundsOptions.inJustDecodeBounds = false
+
+                imageStream = requireContext().contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(imageStream, null, boundsOptions)
                 imageStream?.close()
 
                 if (bitmap == null) {
@@ -292,22 +304,18 @@ class CarFormFragment : Fragment() {
                     return@withContext false
                 }
 
-                // Rotate the bitmap
-                val rotatedBitmap = when (orientation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(bitmap, 90f)
-                    ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(bitmap, 180f)
-                    ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(bitmap, 270f)
-                    else -> bitmap
-                }
+                // Correct the bitmap according to the EXIF orientation. Camera apps
+                // (Pixel's included) can tag portrait photos with any of the 8 EXIF
+                // orientation values, not just simple 90/180/270 rotations - handling
+                // only those left flipped/transposed images uncorrected.
+                val correctedBitmap = applyExifOrientation(bitmap, orientation ?: ExifInterface.ORIENTATION_NORMAL)
 
-                // Resize the bitmap
-                val maxHeight = 960.0f
-                val maxWidth = 1280.0f
-                val ratio: Float = Math.min(maxWidth / rotatedBitmap.width, maxHeight / rotatedBitmap.height)
-                val newWidth = Math.round(ratio * rotatedBitmap.width)
-                val newHeight = Math.round(ratio * rotatedBitmap.height)
+                // Resize the bitmap to the final target size
+                val ratio: Float = Math.min(maxWidth.toFloat() / correctedBitmap.width, maxHeight.toFloat() / correctedBitmap.height)
+                val newWidth = Math.round(ratio * correctedBitmap.width)
+                val newHeight = Math.round(ratio * correctedBitmap.height)
 
-                val scaledBitmap = Bitmap.createScaledBitmap(rotatedBitmap, newWidth, newHeight, true)
+                val scaledBitmap = Bitmap.createScaledBitmap(correctedBitmap, newWidth, newHeight, true)
 
                 val outputStream = requireContext().contentResolver.openOutputStream(uri, "w")
                 if (outputStream == null) {
@@ -339,10 +347,46 @@ class CarFormFragment : Fragment() {
         }
     }
 
-    private fun rotateImage(source: Bitmap, angle: Float): Bitmap {
+    private fun applyExifOrientation(source: Bitmap, orientation: Int): Bitmap {
         val matrix = Matrix()
-        matrix.postRotate(angle)
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(90f)
+                matrix.postScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(270f)
+                matrix.postScale(-1f, 1f)
+            }
+            else -> return source
+        }
         return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height, width) = options.outHeight to options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+            // The EXIF orientation isn't applied until after decoding, so the raw
+            // decoded bounds may have width/height swapped relative to the final
+            // display orientation. Sample against the larger of the two target
+            // dimensions to stay safe for both landscape- and portrait-tagged images.
+            val reqSize = Math.max(reqWidth, reqHeight)
+            while (halfHeight / inSampleSize >= reqSize || halfWidth / inSampleSize >= reqSize) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 
     override fun onDestroyView() {
