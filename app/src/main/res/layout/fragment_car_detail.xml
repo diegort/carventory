@@ -12,6 +12,7 @@
         android:layout_height="0dp"
         android:scaleType="centerInside"
         android:contentDescription="@string/car_image"
+        android:transitionName="@string/car_image_transition_name"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
