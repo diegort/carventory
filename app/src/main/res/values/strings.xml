@@ -38,7 +38,6 @@
     <string name="add_new_car">Add New Car</string>
     <string name="car_image_preview">Car image preview</string>
     <string name="take_image">Take Image</string>
-    <string name="car_image_transition_name" translatable="false">car_image</string>
 
     <!-- Image Viewer -->
     <string name="close">Close</string>

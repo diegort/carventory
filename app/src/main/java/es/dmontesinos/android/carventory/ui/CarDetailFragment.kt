@@ -12,7 +12,6 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
@@ -91,12 +90,8 @@ class CarDetailFragment : Fragment() {
                 return when (menuItem.itemId) {
                     R.id.action_edit -> {
                         currentCar?.let {
-                            val extras = FragmentNavigatorExtras(
-                                binding.carDetailImage to binding.carDetailImage.transitionName
-                            )
                             findNavController().navigate(
-                                CarDetailFragmentDirections.actionCarDetailFragmentToCarFormFragment(it.id),
-                                extras
+                                CarDetailFragmentDirections.actionCarDetailFragmentToCarFormFragment(it.id)
                             )
                         }
                         true
