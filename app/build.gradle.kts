@@ -1,9 +1,21 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     //id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+}
+
+// Release signing credentials are kept out of the repo. Copy
+// keystore.properties.template to keystore.properties (gitignored) and fill
+// in your real keystore path/passwords to produce a signed release build.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -14,16 +26,18 @@ android {
         applicationId = "es.dmontesinos.android.carventory"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = file("keystore/carventory.jks") // Path to your keystore
-            storePassword = "your_store_password"
-            keyAlias = "your_key_alias"
-            keyPassword = "your_key_password"
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
         }
     }
 
@@ -35,7 +49,9 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
