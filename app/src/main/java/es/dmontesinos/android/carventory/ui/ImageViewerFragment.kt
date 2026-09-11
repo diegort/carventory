@@ -49,11 +49,6 @@ class ImageViewerFragment : Fragment() {
         // Set up image loading and gestures
         loadImageWithProperRotation()
         setupSwipeToDismiss()
-
-        // Set up close button
-        binding.closeButton.setOnClickListener {
-            findNavController().navigateUp()
-        }
     }
 
     private fun hideSystemBars() {
@@ -109,68 +104,78 @@ class ImageViewerFragment : Fragment() {
 
     private fun setupSwipeToDismiss() {
         val dismissThreshold = resources.displayMetrics.heightPixels / 4f
+        val dragStartSlop = 20f
+        var initialTouchX = 0f
         var initialTouchY = 0f
         var dY = 0f
-        var isMoving = false
+        var isDragging = false
 
-        // Add OnClickListener to satisfy the lint requirement
-        binding.root.setOnClickListener {
-            // Empty click listener to satisfy the lint warning
-        }
-
-        binding.root.setOnTouchListener { view, event ->
-            // Only handle touch events when image is at minimum zoom level
+        // Listen on the image view itself: it covers the whole screen, so a
+        // listener on the root would never see any touches. Taps and the
+        // image view's own double-tap-to-zoom keep working because we only
+        // start consuming events once a real vertical drag is detected.
+        binding.zoomableImageView.setOnTouchListener { _, event ->
+            // Only take over for swipe-to-dismiss when not zoomed in;
+            // otherwise let the image view handle its own pan/zoom.
             val canHandleTouch = binding.zoomableImageView.isReady &&
                     binding.zoomableImageView.scale == binding.zoomableImageView.minScale
 
             if (!canHandleTouch) {
+                isDragging = false
                 return@setOnTouchListener false
             }
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    isMoving = false
+                    isDragging = false
+                    initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     dY = binding.root.translationY - event.rawY
-                    return@setOnTouchListener true
+                    false
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    // If we've moved more than a small threshold, it's a swipe
-                    if (Math.abs(event.rawY - initialTouchY) > 10) {
-                        isMoving = true
-
+                    if (!isDragging) {
+                        val deltaX = event.rawX - initialTouchX
+                        val deltaY = event.rawY - initialTouchY
+                        if (Math.abs(deltaY) > dragStartSlop && Math.abs(deltaY) > Math.abs(deltaX)) {
+                            isDragging = true
+                        }
+                    }
+                    if (isDragging) {
                         binding.root.translationY = event.rawY + dY
-
                         // Adjust opacity based on drag distance
                         val alpha = 1.0f - Math.min(1.0f, Math.abs(binding.root.translationY) / dismissThreshold)
                         binding.root.alpha = alpha
                     }
-                    return@setOnTouchListener true
+                    isDragging
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    if (!isMoving) {
-                        view.performClick()
-                    } else if (Math.abs(binding.root.translationY) > dismissThreshold) {
-                        // Dismiss with animation
-                        binding.root.animate()
-                            .translationY(if (binding.root.translationY > 0) binding.root.height.toFloat() else -binding.root.height.toFloat())
-                            .alpha(0f)
-                            .setDuration(200)
-                            .withEndAction {
-                                findNavController().navigateUp()
-                            }
-                            .start()
+                    if (isDragging) {
+                        if (Math.abs(binding.root.translationY) > dismissThreshold) {
+                            // Dismiss with animation
+                            binding.root.animate()
+                                .translationY(if (binding.root.translationY > 0) binding.root.height.toFloat() else -binding.root.height.toFloat())
+                                .alpha(0f)
+                                .setDuration(200)
+                                .withEndAction {
+                                    findNavController().navigateUp()
+                                }
+                                .start()
+                        } else {
+                            // Reset position
+                            binding.root.animate()
+                                .translationY(0f)
+                                .alpha(1.0f)
+                                .setDuration(200)
+                                .start()
+                        }
+                        isDragging = false
+                        true
                     } else {
-                        // Reset position
-                        binding.root.animate()
-                            .translationY(0f)
-                            .alpha(1.0f)
-                            .setDuration(200)
-                            .start()
+                        false
                     }
-                    return@setOnTouchListener true
                 }
-                else -> return@setOnTouchListener false
+                else -> false
             }
         }
     }
