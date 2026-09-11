@@ -33,6 +33,6 @@ google-services.json
 *.hprof
 
 # Generated APK and APP Bundle files
-app/*
+*.aab
 
 **/.DS_Store

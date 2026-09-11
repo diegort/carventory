@@ -1,6 +1,7 @@
 package es.dmontesinos.android.carventory
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -14,6 +15,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,6 +29,11 @@ class MainActivity : AppCompatActivity() {
         // Enable edge-to-edge display but keep status bar visible
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // Let content draw under the camera cutout instead of reserving space
+        // for it, so landscape uses the screen's full width
+        window.attributes.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+
         // Set status bar to be transparent but with visible icons
         window.statusBarColor = Color.TRANSPARENT
         WindowInsetsControllerCompat(window, window.decorView).apply {
@@ -35,12 +42,23 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
-        // Add insets handling for your main layout
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            // Apply padding to your top-level content to avoid status bar overlap
-            binding.root.setPadding(0, statusBars.top, 0, 0)
+        // The toolbar owns the top edge: it absorbs the status bar inset.
+        // The camera cutout is intentionally NOT consumed here, so the toolbar
+        // and content use the screen's full width in landscape instead of
+        // leaving a gap for it.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = bars.top)
+            insets
+        }
+
+        // Content sits below the toolbar, so it only needs the nav bar's
+        // side insets (e.g. a 3-button nav bar docked on a side in landscape).
+        ViewCompat.setOnApplyWindowInsetsListener(binding.navHostFragment) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(left = bars.left, right = bars.right)
             insets
         }
 
