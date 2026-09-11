@@ -6,20 +6,13 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/imageTopGuideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.33" />
-
     <ImageView
         android:id="@+id/carDetailImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerInside"
         android:contentDescription="@string/car_image"
-        app:layout_constraintTop_toTopOf="@id/imageTopGuideline"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
