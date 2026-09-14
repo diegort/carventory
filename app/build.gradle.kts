@@ -2,10 +2,11 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    // Kotlin compilation is handled by AGP 9's built-in Kotlin support;
+    // no separate org.jetbrains.kotlin.android plugin needed.
     //id("kotlin-kapt")
     id("androidx.navigation.safeargs.kotlin")
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
 }
 
 // Release signing credentials are kept out of the repo. Copy
@@ -61,10 +62,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-
     buildFeatures {
         viewBinding = true
     }
@@ -92,11 +89,11 @@ dependencies {
     implementation("com.davemorrissey.labs:subsampling-scale-image-view:3.10.0")
 
     // Room components
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.9")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.9")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.8.5")
+    implementation("androidx.room:room-ktx:2.8.5")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.9.6")
+    implementation("androidx.navigation:navigation-ui-ktx:2.9.6")
+    ksp("androidx.room:room-compiler:2.8.5")
 
     // CameraX
     implementation("androidx.camera:camera-camera2:1.4.1")
