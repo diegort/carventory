@@ -1,7 +1,8 @@
 package es.dmontesinos.android.carventory
 
 import android.os.Bundle
-import android.view.WindowManager
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -12,9 +13,7 @@ import es.dmontesinos.android.carventory.databinding.ActivityMainBinding
 import android.graphics.Color
 import android.content.res.Configuration
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 
 class MainActivity : AppCompatActivity() {
@@ -24,21 +23,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Replaces the deprecated setDecorFitsSystemWindows/setStatusBarColor/
+        // layoutInDisplayCutoutMode combo with the version-aware AndroidX
+        // helper (also draws content under the camera cutout on every
+        // supported version, matching the previous SHORT_EDGES behavior).
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { isDarkTheme() }
+        )
         super.onCreate(savedInstanceState)
-
-        // Enable edge-to-edge display but keep status bar visible
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // Let content draw under the camera cutout instead of reserving space
-        // for it, so landscape uses the screen's full width
-        window.attributes.layoutInDisplayCutoutMode =
-            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-
-        // Set status bar to be transparent but with visible icons
-        window.statusBarColor = Color.TRANSPARENT
-        WindowInsetsControllerCompat(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !isDarkTheme() // Adapt icons color based on theme
-        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
