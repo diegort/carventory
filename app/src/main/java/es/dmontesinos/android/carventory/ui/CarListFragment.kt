@@ -10,6 +10,10 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -131,6 +135,20 @@ class CarListFragment : Fragment() {
             findNavController().navigate(
                 CarListFragmentDirections.actionCarListFragmentToCarFormFragment()
             )
+        }
+
+        // MainActivity intentionally doesn't pad content away from the bottom
+        // system bar (to allow full-bleed content in landscape), so on a
+        // 3-button-nav device the nav bar can otherwise overlap the FAB's
+        // tap target. Push it up by the nav bar's height on top of its
+        // normal margin.
+        val baseBottomMargin = binding.fab.marginBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fab) { view, insets ->
+            val navBarBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = baseBottomMargin + navBarBottom
+            }
+            insets
         }
     }
 
