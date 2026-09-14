@@ -3,8 +3,6 @@ package es.dmontesinos.android.carventory.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -21,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
-import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -295,49 +292,19 @@ class CarFormFragment : Fragment() {
         return withContext(Dispatchers.IO) {
             try {
                 val targetSizeBytes = 200 * 1024 // 200KB
-                var imageStream = requireContext().contentResolver.openInputStream(uri)
-
-                // Get EXIF orientation
-                val exifInterface = imageStream?.let { ExifInterface(it) }
-                val orientation = exifInterface?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-                imageStream?.close()
-
-                // Decode bounds first so we can downsample directly instead of
-                // decoding the full-resolution image and scaling afterwards
                 val maxHeight = 960
                 val maxWidth = 1280
 
-                val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                imageStream = requireContext().contentResolver.openInputStream(uri)
-                BitmapFactory.decodeStream(imageStream, null, boundsOptions)
-                imageStream?.close()
-
-                boundsOptions.inSampleSize = calculateInSampleSize(boundsOptions, maxWidth, maxHeight)
-                boundsOptions.inJustDecodeBounds = false
-
-                imageStream = requireContext().contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(imageStream, null, boundsOptions)
-                imageStream?.close()
-
-                if (bitmap == null) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), getString(R.string.error_compressing_image), Toast.LENGTH_LONG).show()
-                    }
-                    return@withContext false
-                }
-
-                // Correct the bitmap according to the EXIF orientation. Camera apps
-                // (Pixel's included) can tag portrait photos with any of the 8 EXIF
-                // orientation values, not just simple 90/180/270 rotations - handling
-                // only those left flipped/transposed images uncorrected.
-                val correctedBitmap = applyExifOrientation(bitmap, orientation ?: ExifInterface.ORIENTATION_NORMAL)
-
-                // Resize the bitmap to the final target size
-                val ratio: Float = Math.min(maxWidth.toFloat() / correctedBitmap.width, maxHeight.toFloat() / correctedBitmap.height)
-                val newWidth = Math.round(ratio * correctedBitmap.width)
-                val newHeight = Math.round(ratio * correctedBitmap.height)
-
-                val scaledBitmap = Bitmap.createScaledBitmap(correctedBitmap, newWidth, newHeight, true)
+                // Glide decodes directly at the requested size (rather than
+                // decoding the full-resolution image first) and corrects for
+                // EXIF orientation automatically, so there's no need to manage
+                // BitmapFactory sampling or orientation math by hand.
+                val bitmap = Glide.with(requireContext())
+                    .asBitmap()
+                    .load(uri)
+                    .fitCenter()
+                    .submit(maxWidth, maxHeight)
+                    .get()
 
                 val outputStream = requireContext().contentResolver.openOutputStream(uri, "w")
                 if (outputStream == null) {
@@ -351,7 +318,7 @@ class CarFormFragment : Fragment() {
                 var quality = 90
                 do {
                     baos.reset()
-                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos)
                     quality -= 5
                 } while (baos.size() > targetSizeBytes && quality > 40)
 
@@ -367,48 +334,6 @@ class CarFormFragment : Fragment() {
                 false
             }
         }
-    }
-
-    private fun applyExifOrientation(source: Bitmap, orientation: Int): Bitmap {
-        val matrix = Matrix()
-        when (orientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
-            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
-            ExifInterface.ORIENTATION_TRANSPOSE -> {
-                matrix.postRotate(90f)
-                matrix.postScale(-1f, 1f)
-            }
-            ExifInterface.ORIENTATION_TRANSVERSE -> {
-                matrix.postRotate(270f)
-                matrix.postScale(-1f, 1f)
-            }
-            else -> return source
-        }
-        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
-    }
-
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val (height, width) = options.outHeight to options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            // The EXIF orientation isn't applied until after decoding, so the raw
-            // decoded bounds may have width/height swapped relative to the final
-            // display orientation. Sample against the larger of the two target
-            // dimensions to stay safe for both landscape- and portrait-tagged images.
-            val reqSize = Math.max(reqWidth, reqHeight)
-            while (halfHeight / inSampleSize >= reqSize || halfWidth / inSampleSize >= reqSize) {
-                inSampleSize *= 2
-            }
-        }
-
-        return inSampleSize
     }
 
     override fun onDestroyView() {
